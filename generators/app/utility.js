@@ -100,6 +100,11 @@ function getTargets(answers) {
                   name: `Azure App Service (Deployment Slots)`,
                   value: `paasslots`
                }];
+            } else if (answers.type === `xamarin`) {
+               targets = [{
+                  name: `App Center`,
+                  value: `appcenter`
+               }];
             } else {
                targets = [{
                   name: `Azure App Service`,
@@ -148,6 +153,9 @@ function getAppTypes(answers) {
    }, {
       name: `Java`,
       value: `java`
+    }, {
+        name: `Xamarin`,
+        value: `xamarin`
    }
       // , {
       //    name: `Custom`,
@@ -155,16 +163,29 @@ function getAppTypes(answers) {
       // }
    ];
 
-   // If this is not a Linux based agent also show
-   // .NET Full
-   if (answers.queue.indexOf(`Linux`) === -1) {
-      types.splice(1, 0, {
-         name: `.NET Framework`,
-         value: `aspFull`
-      });
-   }
+    // If this is not a Linux based agent also show
+    // .NET Full
+    if (answers.queue.indexOf(`Linux`) === -1) {
+        types.splice(1, 0, {
+            name: `.NET Framework`,
+            value: `aspFull`
+        });
+    }
 
-   return types;
+    return types;
+}
+
+function getXamarinTypes(answers) {
+    // Default to languages tha work on all agents
+    let xamarinTypes = [{
+        name: `Xamarin Forms`,
+        value: `forms`
+    }, {
+        name: `Xamarin Native`,
+        value: `native`
+    }];
+
+    return xamarinTypes;
 }
 
 function getPATPrompt(answers) {
@@ -731,7 +752,15 @@ function tryFindRelease(args, callback) {
 function findRelease(args, callback) {
    "use strict";
 
-   var name = isDocker(args.target) ? `${args.appName}-Docker-CD` : `${args.appName}-CD`;
+   var name = '';
+
+   if(isDocker(args.target)){
+       name = `${args.appName}-Docker-CD`;
+   } else if(args.target === 'appCenter'){
+      name = `${args.releaseName}` === 'iOS' ? `${args.appName}-CD-iOS` : `${args.appName}-CD-Android`;
+   } else {
+     name = `${args.appName}-CD`;
+   }
 
    var options = addUserAgent({
       "method": `GET`,
@@ -1136,6 +1165,7 @@ module.exports = {
    logMessage: logMessage,
    getTargets: getTargets,
    getAppTypes: getAppTypes,
+   getXamarinTypes: getXamarinTypes,
    checkStatus: checkStatus,
    findProject: findProject,
    findRelease: findRelease,

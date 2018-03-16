@@ -169,6 +169,19 @@ function applicationType(obj) {
    };
 }
 
+function applicationXamarinType(obj) {
+    return {
+        name: `xamarinType`,
+        type: `list`,
+        store: true,
+        message: `What Xamarin application do you want to create?`,
+        choices: util.getXamarinTypes,
+        when: answers => {
+            return answers.type === `xamarin`;
+        }
+    };
+}
+
 function customFolder(obj) {
    return {
       name: `customFolder`,
@@ -183,15 +196,27 @@ function customFolder(obj) {
 }
 
 function applicationName(obj) {
+    return {
+        name: `applicationName`,
+        type: `input`,
+        store: true,
+        message: `What is the name of your application?`,
+        validate: util.validateApplicationName,
+        when: () => {
+            return obj.options.applicationName === undefined;
+        }
+    };
+}
+
+function packageName(obj) {
    return {
-      name: `applicationName`,
+      name: `packageName`,
       type: `input`,
       store: true,
-      message: `What is the name of your application?`,
-      validate: util.validateApplicationName,
-      when: () => {
-         return obj.options.applicationName === undefined;
-      }
+      message: `What is the name of your package? (com.compagny)`,
+       when: answers => {
+           return obj.options.packageName === undefined && answers.type === `xamarin`;
+       }
    };
 }
 
@@ -427,8 +452,8 @@ function installDep(obj) {
          }
       ],
       when: answers => {
-         return answers.type !== `aspFull` && obj.options.installDep === undefined;
-      }
+           return answers.type !== `xamarin` &&  answers.type !== `aspFull` && obj.options.installDep === undefined;
+       }
    };
 }
 
@@ -473,7 +498,9 @@ module.exports = {
    dockerRegistry: dockerRegistry,
    dockerCertPath: dockerCertPath,
    applicationType: applicationType,
+   applicationXamarinType: applicationXamarinType,
    applicationName: applicationName,
+   packageName: packageName,
    servicePrincipalId: servicePrincipalId,
    servicePrincipalKey: servicePrincipalKey,
    dockerRegistryPassword: dockerRegistryPassword,
